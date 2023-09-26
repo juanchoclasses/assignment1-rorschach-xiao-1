@@ -98,5 +98,12 @@
       "command": "npx jest --coverage",
       "cwd": "${workspaceFolder}"
     },
+    {
+      "type": "node-terminal",
+      "name": "Jest FormulaEvaluator",
+      "request": "launch",
+      "command": "npx jest FormulaEvaluator",
+      "cwd": "${workspaceFolder}"
+    },
   ]
 }
