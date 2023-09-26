@@ -28,7 +28,7 @@ function SpreadSheet({ documentName }: SpreadSheetProps) {
   const [statusString, setStatusString] = useState(spreadSheetClient.getEditStatusString());
   const [currentCell, setCurrentCell] = useState(spreadSheetClient.getWorkingCellLabel());
   const [currentlyEditing, setCurrentlyEditing] = useState(spreadSheetClient.getEditStatus());
-  const [userName, setUserName] = useState(window.sessionStorage.getItem('userName') || "");
+  const [userName, setUserName] = useState(window.sessionStorage.getItem('userName') || "Unknown");
 
 
   function updateDisplayValues(): void {
@@ -82,7 +82,10 @@ function SpreadSheet({ documentName }: SpreadSheetProps) {
    * the other buttons do require asynchronous processing and so the function is marked async
    */
   async function onCommandButtonClick(text: string): Promise<void> {
-
+    if (spreadSheetClient.userName === "" || spreadSheetClient.userName === "Unknown") {
+      window.alert('Please enter your name before starting it.');
+      return;
+    }
 
     switch (text) {
       case ButtonNames.edit_toggle:
@@ -116,7 +119,10 @@ function SpreadSheet({ documentName }: SpreadSheetProps) {
    * 
    * */
   function onButtonClick(event: React.MouseEvent<HTMLButtonElement>): void {
-
+    if (spreadSheetClient.userName === "" || spreadSheetClient.userName === "Unknown") {
+      window.alert('Please enter your name before starting it.');
+      return;
+    }
     const text = event.currentTarget.textContent;
     let trueText = text ? text : "";
     spreadSheetClient.setEditStatus(true);
@@ -136,7 +142,10 @@ function SpreadSheet({ documentName }: SpreadSheetProps) {
    * If the edit status is false then it will ask the machine to update the current formula.
    */
   function onCellClick(event: React.MouseEvent<HTMLButtonElement>): void {
-
+    if (spreadSheetClient.userName === "" || spreadSheetClient.userName === "Unknown") {
+      window.alert('Please enter your name before starting it.');
+      return;
+    }
     const cellLabel = event.currentTarget.getAttribute("cell-label");
     // calculate the current row and column of the clicked on cell
 
