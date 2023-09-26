@@ -45,40 +45,101 @@ export class FormulaEvaluator {
 
   evaluate(formula: FormulaType) {
 
+    this._result = 0;
+    this._errorMessage = ErrorMessages.emptyFormula;
 
-    // set the this._result to the length of the formula
+    if (formula.length === 0) {
+      return;
+    }
+    // create two stacks to store numbers and 
+    const numStack : number[] = [];
+    const opStack : string[] = [];
+    let errorMessage = "";
 
-    this._result = formula.length;
-    this._errorMessage = "";
+    // define the priority of the operators
+    const precedence: { [key: string]: number } = {
+      '+': 1,
+      '-': 1,
+      '*': 2,
+      '/': 2,
+    };
 
-    switch (formula.length) {
-      case 0:
-        this._errorMessage = ErrorMessages.emptyFormula;
-        break;
-      case 7:
-        this._errorMessage = ErrorMessages.partial;
-        break;
-      case 8:
-        this._errorMessage = ErrorMessages.divideByZero;
-        break;
-      case 9:
-        this._errorMessage = ErrorMessages.invalidCell;
-        break;
-      case 10:
-        this._errorMessage = ErrorMessages.invalidFormula;
-        break;
-      case 11:
-        this._errorMessage = ErrorMessages.invalidNumber;
-        break;
-      case 12:
-        this._errorMessage = ErrorMessages.invalidOperator;
-        break;
-      case 13:
-        this._errorMessage = ErrorMessages.missingParentheses;
-        break;
-      default:
-        this._errorMessage = "";
-        break;
+    // helper function: apply top operator to the top two numbers on the stack
+    function applyOperator() {
+      if (numStack.length < 2) {
+        errorMessage = ErrorMessages.invalidNumber;
+        opStack.pop();
+        return;
+      }
+      const b = numStack.pop() as number;
+      const a = numStack.pop() as number;
+      const operator = opStack.pop() as string;
+  
+      switch (operator) {
+        case '+':
+          numStack.push(a + b);
+          break;
+        case '-':
+          numStack.push(a - b);
+          break;
+        case '*':
+          numStack.push(a * b);
+          break;
+        case '/':
+          numStack.push(a / b);
+          if (b === 0) {
+            errorMessage = ErrorMessages.divideByZero;
+          }
+          break;
+        default:
+          throw new Error('Invalid operator: ' + operator);
+      }
+    }
+
+    // traverse the formula
+    for (const token of formula) {
+      if (this.isNumber(token)) {
+        // if it's a number, push it to numStack
+        numStack.push(Number(token));
+        // if it's a cell reference
+      } else if (this.isCellReference(token)) {
+        numStack.push(this._sheetMemory.getCellByLabel(token).getValue());
+      }
+      else {
+        if (token === '(') {
+          // if it's left parenthesis
+          opStack.push(token);
+        } else if (token === ')') {
+          // if it's right parenthesis, apply the operators utill we meet left paranthesis
+          while (opStack.length > 0 && opStack[opStack.length - 1] !== '(') {
+            applyOperator();
+          }
+          opStack.pop(); // pop left parenthesis
+        } else {
+          // if it's operator, apply operator according to the priority
+          while (
+            opStack.length > 0 &&
+            opStack[opStack.length - 1] !== '(' &&
+            precedence[opStack[opStack.length - 1]] >= precedence[token]
+          ) {
+            applyOperator();
+          }
+          opStack.push(token);
+        }
+      }
+    }
+
+    // process the left operators
+    while (opStack.length > 0) {
+      applyOperator();
+    }
+    this._errorMessage = errorMessage;
+    if (numStack.length === 1){
+      this._result = numStack[0];
+    }
+    else {
+      this._result = 0;
+      this._errorMessage = ErrorMessages.missingParentheses;
     }
   }
 
