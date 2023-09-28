@@ -67,7 +67,7 @@ export class FormulaEvaluator {
     // helper function: apply top operator to the top two numbers on the stack
     function applyOperator() {
       if (numStack.length < 2) {
-        errorMessage = ErrorMessages.invalidNumber;
+        errorMessage = ErrorMessages.invalidFormula;
         opStack.pop();
         return;
       }
