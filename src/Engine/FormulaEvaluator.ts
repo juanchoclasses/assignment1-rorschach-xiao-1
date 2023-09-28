@@ -114,7 +114,14 @@ export class FormulaEvaluator {
           while (opStack.length > 0 && opStack[opStack.length - 1] !== '(') {
             applyOperator();
           }
-          opStack.pop(); // pop left parenthesis
+          // if left parenthese does not exist, throw an error
+          if (opStack.length === 0) {
+            errorMessage = ErrorMessages.missingParentheses
+          } else {
+            opStack.pop(); // pop left parenthesis
+          }
+          
+          
         } else {
           // if it's operator, apply operator according to the priority
           while (
@@ -124,10 +131,12 @@ export class FormulaEvaluator {
           ) {
             applyOperator();
           }
+          
           opStack.push(token);
         }
       }
     }
+
 
     // process the left operators
     while (opStack.length > 0) {
