@@ -103,6 +103,14 @@ export class FormulaEvaluator {
         numStack.push(Number(token));
         // if it's a cell reference
       } else if (this.isCellReference(token)) {
+        let cell = this._sheetMemory.getCellByLabel(token)
+        if (cell.getError() === ErrorMessages.emptyFormula 
+        || cell.getError() === ErrorMessages.invalidCell
+        || cell.getError() === ErrorMessages.invalidFormula
+        || cell.getError() === ErrorMessages.divideByZero){
+          errorMessage = ErrorMessages.invalidCell;
+          break;
+        }
         numStack.push(this._sheetMemory.getCellByLabel(token).getValue());
       }
       else {
@@ -146,9 +154,12 @@ export class FormulaEvaluator {
     if (numStack.length === 1){
       this._result = numStack[0];
     }
+    else if (numStack.length === 0 && this._errorMessage === "") {
+      this._result = 0;
+      this._errorMessage =  ErrorMessages.missingParentheses;
+    }
     else {
       this._result = 0;
-      this._errorMessage = ErrorMessages.missingParentheses;
     }
   }
 
